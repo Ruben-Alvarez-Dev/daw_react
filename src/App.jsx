@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { UserProvider } from './contexts/UserContext.jsx';
 import { useUser } from './contexts/UserContext.jsx';
 import Navbar from './components/layout/Navbar.jsx';
@@ -7,30 +7,42 @@ import Login from './components/auth/Login.jsx';
 import Register from './components/auth/Register.jsx';
 import AdminDashboard from './components/admin/AdminDashboard.jsx';
 import CustomerDashboard from './components/customer/CustomerDashboard.jsx';
-import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
+import UserProfile from './components/profile/UserProfile.jsx';
 import './App.css';
 
-// Componente que redirige según el rol del usuario
-const DashboardRouter = () => {
+// Componente para proteger rutas
+const PrivateRoute = ({ children }) => {
     const { user } = useUser();
     
-    if (user?.role === 'admin') {
-        return <Navigate to="/admin" replace />;
+    if (!user) {
+        return <Navigate to="/login" />;
     }
-    return <Navigate to="/customer" replace />;
+    
+    return children;
 };
 
-// Componente que previene acceder a login/register si ya está autenticado
-const AuthRoute = ({ children }) => {
+// Componente para rutas de autenticación
+const PublicRoute = ({ children }) => {
     const { user } = useUser();
-    const location = useLocation();
-
+    
     if (user) {
-        // Redirige al dashboard correspondiente si ya está autenticado
-        return <Navigate to="/" replace />;
+        return <Navigate to="/" />;
     }
-
+    
     return children;
+};
+
+// Componente para manejar la redirección inicial
+const HomeRedirect = () => {
+    const { user } = useUser();
+    
+    if (!user) {
+        return <Navigate to="/login" />;
+    }
+    
+    return user.role === 'admin' ? 
+        <Navigate to="/admin" /> : 
+        <Navigate to="/customer" />;
 };
 
 const App = () => {
@@ -41,28 +53,55 @@ const App = () => {
                     <Navbar />
                     <div className="app-container">
                         <Routes>
-                            {/* Ruta por defecto */}
-                            <Route path="/" element={
-                                <ProtectedRoute>
-                                    <DashboardRouter />
-                                </ProtectedRoute>
-                            } />
+                            {/* Ruta principal */}
+                            <Route path="/" element={<HomeRedirect />} />
 
-                            {/* Rutas de autenticación */}
-                            <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
-                            <Route path="/register" element={<AuthRoute><Register /></AuthRoute>} />
+                            {/* Rutas públicas */}
+                            <Route 
+                                path="/login" 
+                                element={
+                                    <PublicRoute>
+                                        <Login />
+                                    </PublicRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/register" 
+                                element={
+                                    <PublicRoute>
+                                        <Register />
+                                    </PublicRoute>
+                                } 
+                            />
 
                             {/* Rutas protegidas */}
-                            <Route path="/admin" element={
-                                <ProtectedRoute>
-                                    <AdminDashboard />
-                                </ProtectedRoute>
-                            } />
-                            <Route path="/customer" element={
-                                <ProtectedRoute>
-                                    <CustomerDashboard />
-                                </ProtectedRoute>
-                            } />
+                            <Route 
+                                path="/profile" 
+                                element={
+                                    <PrivateRoute>
+                                        <UserProfile />
+                                    </PrivateRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/admin" 
+                                element={
+                                    <PrivateRoute>
+                                        <AdminDashboard />
+                                    </PrivateRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/customer" 
+                                element={
+                                    <PrivateRoute>
+                                        <CustomerDashboard />
+                                    </PrivateRoute>
+                                } 
+                            />
+
+                            {/* Ruta para manejar rutas no encontradas */}
+                            <Route path="*" element={<Navigate to="/" replace />} />
                         </Routes>
                     </div>
                 </div>
