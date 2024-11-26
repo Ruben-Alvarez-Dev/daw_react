@@ -21,20 +21,21 @@ const Navbar = () => {
 
                 {user && (
                     <div className="navbar-center">
-                        {/* Links específicos según el rol */}
-                        {user.role === 'admin' ? (
-                            <div className="nav-links">
-                                <Link to="/admin" className="nav-link">Dashboard</Link>
-                                <Link to="/admin/restaurants" className="nav-link">Restaurants</Link>
-                                <Link to="/admin/tables" className="nav-link">Tables</Link>
-                                <Link to="/admin/reservations" className="nav-link">Reservations</Link>
-                            </div>
-                        ) : (
-                            <div className="nav-links">
-                                <Link to="/customer" className="nav-link">Dashboard</Link>
-                                <Link to="/customer/reservations" className="nav-link">My Reservations</Link>
-                            </div>
-                        )}
+                        <div className="nav-links">
+                            {user.role === 'admin' ? (
+                                <>
+                                    <Link to="/admin" className="nav-link">Dashboard</Link>
+                                    <Link to="/restaurants" className="nav-link">Restaurants</Link>
+                                    <Link to="/reservations" className="nav-link">Reservations</Link>
+                                </>
+                            ) : (
+                                <>
+                                    <Link to="/customer" className="nav-link">Dashboard</Link>
+                                    <Link to="/restaurants" className="nav-link">Restaurants</Link>
+                                    <Link to="/reservations" className="nav-link">My Reservations</Link>
+                                </>
+                            )}
+                        </div>
                     </div>
                 )}
 
